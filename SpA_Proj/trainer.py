@@ -85,7 +85,7 @@ class Trainer(object):
 
         backbone = self.model.module if hasattr(self.model, "module") else self.model
         for param in backbone.parameters():
-            param.requires_grad = True  # 全部参数可训练
+            param.requires_grad = True 
 
         params = [
             {"params": [p for n, p in backbone.named_parameters() if not n.startswith('fc') and p.requires_grad], "lr": args.lr},
@@ -172,7 +172,7 @@ class Trainer(object):
                     label_org_w=one_hot_org_w, label_invs_w=one_hot_invs_w
                 )
 
-                # --- 对齐监控和特征中心更新 ---
+              
                 with torch.no_grad():
                     feats = self.model(input_org_1, get_feat=True)
                     self.center_monitor.update(feats, target_org)
@@ -202,23 +202,23 @@ class Trainer(object):
                 fc_weight = backbone.fc.weight
 
                 if fc_weight.grad is not None:
-                    centers = self.center_monitor.class_centers  # [C,D]
+                    centers = self.center_monitor.class_centers  
                     mu_g = centers.mean(dim=0, keepdim=True)
                     centers_centered = centers - mu_g
-                    mu_normed = F.normalize(centers_centered, dim=1)  # μ_c → unit
+                    mu_normed = F.normalize(centers_centered, dim=1)  
 
                     grad = fc_weight.grad
                     grad_proj = torch.zeros_like(grad)
                     gamma = 0.6
 
-                    # 逐类处理
+               
                     for c in range(self.num_classes):
                         w = F.normalize(fc_weight.data[c], dim=0)
                         μ = mu_normed[c]
 
                         g = grad[c]
                         g_tan = g - torch.dot(g, w) * w
-                        d = μ - torch.dot(μ, w) * w  # 同样位于切平面
+                        d = μ - torch.dot(μ, w) * w 
                         d_norm = torch.norm(d).clamp(min=1e-8)
                         d = d / d_norm
                         if torch.dot(g_tan, d) > 0:
