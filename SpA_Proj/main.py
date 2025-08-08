@@ -8,7 +8,7 @@ import numpy as np
 import random
 import datetime
 from torch.backends import cudnn
-from trainer import Trainer   # 假设刚才Trainer代码已存为这个py文件
+from trainer import Trainer   
 from model import ResNet_cifar, Resnet_LT
 from imbalance_data import cifar10Imbanlance, cifar100Imbanlance, dataset_lt_data
 from utils import util
@@ -171,12 +171,10 @@ def main():
     else:
         print("=> no checkpoint found at '{}'".format(args.resume))
 
-    # Load Dataset
     train_dataset, val_dataset = get_dataset(args)
     num_classes = len(np.unique(train_dataset.targets))
     assert num_classes == args.num_classes
 
-    # Per-class sample count
     cls_num_list = [0] * num_classes
     for label in train_dataset.targets:
         cls_num_list[label] += 1
@@ -187,7 +185,6 @@ def main():
     val_loader = torch.utils.data.DataLoader(
         val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=True,worker_init_fn=seed_worker)
 
-    # Weighted loader
     cls_weight = 1.0 / (np.array(cls_num_list) ** args.resample_weighting)
     cls_weight = cls_weight / np.sum(cls_weight) * len(cls_num_list)
     samples_weight = np.array([cls_weight[t] for t in train_dataset.targets])
