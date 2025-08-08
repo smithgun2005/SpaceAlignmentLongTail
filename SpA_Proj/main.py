@@ -1,4 +1,4 @@
-#对照组
+
 import sys
 import os
 import time
